@@ -20,4 +20,4 @@ async def redirect_to_url(short_code: str, session: AsyncSession = Depends(get_d
     if not link:
         raise HTTPException(status_code=404, detail="Link not found")
         
-    return RedirectResponse(url=link.original_url)
+    return RedirectResponse(url=link.original_url, status_code=307)
