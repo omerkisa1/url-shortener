@@ -9,6 +9,7 @@ def generate_short_code() -> str:
     return ''.join(random.choices(chars, k=6))
     
 async def create_link(session: AsyncSession, original_url: str):
+    original_url = str(original_url)
     for _ in range(5):
         code = generate_short_code()
         stmt = select(Link).where(Link.short_code == code)
