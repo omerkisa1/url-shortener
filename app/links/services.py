@@ -2,7 +2,7 @@ import string
 import random
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-from app.links.models import Link # Kendi yoluna göre düzelt
+from app.links.models import Link
 
 def generate_short_code() -> str:
     chars = string.ascii_letters + string.digits
