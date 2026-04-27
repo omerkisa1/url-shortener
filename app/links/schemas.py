@@ -1,14 +1,11 @@
-from pydantic import BaseModel, EmailStr, ConfigDict, field_validator
-from datetime import date, datetime
-from typing import Optional
-from uuid import UUID
-import re
+from pydantic import BaseModel, HttpUrl, AnyHttpUrl
+from datetime import datetime
 
 class ShortenRequest(BaseModel):
-    original_url : str
+    original_url : AnyHttpUrl
 
 
 class ShortenResponse(BaseModel):
     short_code : str
-    original_url : str
+    original_url : AnyHttpUrl
     created_at : datetime

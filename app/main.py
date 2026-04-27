@@ -3,9 +3,11 @@ from app.config import settings
 from app.database import get_db
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
+from app.links.router import router as LinkRouter
 
 
 app = FastAPI()
+app.include_router(LinkRouter, prefix="/link")
 
 @app.get("/health")
 async def health_check(session: AsyncSession = Depends(get_db)):
