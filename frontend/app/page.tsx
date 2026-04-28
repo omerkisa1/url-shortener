@@ -54,11 +54,11 @@ export default function Home() {
   };
 
   return (
-    <main className="min-h-screen bg-gray-50 flex flex-col items-center py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-4xl w-full space-y-8 text-black">
+    <main className="min-h-screen bg-gray-50 flex flex-col items-center py-12 px-4 sm:px-6 lg:px-8" suppressHydrationWarning>
+      <div className="max-w-4xl w-full space-y-8 text-black" suppressHydrationWarning>
         
         {/* Header & Form Section */}
-        <div className="bg-white p-8 rounded-xl shadow-md text-center">
+        <div className="bg-white p-8 rounded-xl shadow-md text-center" suppressHydrationWarning>
           <h1 className="text-4xl font-extrabold text-blue-600 mb-4">URL Kısaltıcı</h1>
           <p className="text-gray-500 mb-8">Uzun linklerinizi kolayca paylaşılabilir hale getirin.</p>
           
@@ -82,10 +82,10 @@ export default function Home() {
         </div>
 
         {/* Links List Section */}
-        <div className="bg-white p-8 rounded-xl shadow-md">
+        <div className="bg-white p-8 rounded-xl shadow-md" suppressHydrationWarning>
           <h2 className="text-2xl font-bold text-gray-800 mb-6">Oluşturulan Linkler</h2>
           
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto" suppressHydrationWarning>
             <table className="min-w-full text-left border-collapse">
               <thead>
                 <tr className="border-b-2 border-gray-100 text-gray-600 text-sm uppercase tracking-wider">
