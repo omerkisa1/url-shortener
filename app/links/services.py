@@ -3,7 +3,7 @@ import random
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from app.links.models import Link
-from app.redis import redis_client
+from app import redis
 
 def generate_short_code() -> str:
     chars = string.ascii_letters + string.digits
@@ -25,7 +25,7 @@ async def create_link(session: AsyncSession, original_url: str):
         
 
 async def get_link_by_code(session: AsyncSession, short_code: str):
-    cached_url = await redis_client.get(short_code)
+    cached_url = await redis.redis_client.get(short_code)
     if cached_url:
         stmt = select(Link).where(Link.short_code == short_code)
         result = await session.execute(stmt)
@@ -41,7 +41,7 @@ async def get_link_by_code(session: AsyncSession, short_code: str):
     link = result.scalars().first()
     
     if link:
-        await redis_client.set(short_code, link.original_url, ex=3600)
+        await redis.redis_client.set(short_code, link.original_url, ex=3600)
         link.click_count += 1
         await session.commit()
         await session.refresh(link)
