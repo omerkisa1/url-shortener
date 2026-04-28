@@ -27,14 +27,7 @@ async def create_link(session: AsyncSession, original_url: str):
 async def get_link_by_code(session: AsyncSession, short_code: str):
     cached_url = await redis.redis_client.get(short_code)
     if cached_url:
-        stmt = select(Link).where(Link.short_code == short_code)
-        result = await session.execute(stmt)
-        link = result.scalars().first()
-
-        if link:
-            link.click_count += 1
-            await session.commit()
-        return {"original_url": cached_url}
+        return cached_url
     
     stmt = select(Link).where(Link.short_code == short_code)
     result = await session.execute(stmt)
@@ -44,6 +37,6 @@ async def get_link_by_code(session: AsyncSession, short_code: str):
         await redis.redis_client.set(short_code, link.original_url, ex=3600)
         link.click_count += 1
         await session.commit()
-        await session.refresh(link)
+        return link.original_url
         
-    return link
+    return None

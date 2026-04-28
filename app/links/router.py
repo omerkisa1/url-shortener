@@ -15,9 +15,9 @@ async def shorten_url(request: ShortenRequest, session: AsyncSession = Depends(g
 
 @router.get("/{short_code}")
 async def redirect_to_url(short_code: str, session: AsyncSession = Depends(get_db)):
-    link = await get_link_by_code(session, short_code)
+    original_url = await get_link_by_code(session, short_code)
     
-    if not link:
+    if not original_url:
         raise HTTPException(status_code=404, detail="Link not found")
-        
-    return RedirectResponse(url=link.original_url, status_code=307)
+    
+    return RedirectResponse(url=original_url, status_code=307)
