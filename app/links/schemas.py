@@ -15,3 +15,6 @@ class AllLinksResponse(BaseModel):
     original_url: str
     click_count: int
     created_at: datetime
+
+class StatisticsResponse(BaseModel):
+    click_count: int

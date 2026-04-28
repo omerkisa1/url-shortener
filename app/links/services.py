@@ -47,3 +47,10 @@ async def get_links(session: AsyncSession):
     all_links = result.scalars().all()
     print(all_links)
     return all_links
+
+async def get_statistics(session: AsyncSession, short_code: str):
+    stmt = select(Link.click_count).where(Link.short_code == short_code)
+    result = await session.execute(stmt)
+
+    statistic = result.scalars().first()
+    return statistic
