@@ -40,3 +40,10 @@ async def get_link_by_code(session: AsyncSession, short_code: str):
         return link.original_url
         
     return None
+
+async def get_links(session: AsyncSession):
+    stmt = select(Link)
+    result = await session.execute(stmt)
+    all_links = result.scalars().first()
+
+    return all_links
