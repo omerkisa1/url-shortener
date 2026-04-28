@@ -44,6 +44,6 @@ async def get_link_by_code(session: AsyncSession, short_code: str):
 async def get_links(session: AsyncSession):
     stmt = select(Link)
     result = await session.execute(stmt)
-    all_links = result.scalars().first()
-
+    all_links = result.scalars().all()
+    print(all_links)
     return all_links

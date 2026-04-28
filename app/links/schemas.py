@@ -9,3 +9,9 @@ class ShortenResponse(BaseModel):
     short_code : str
     original_url : AnyHttpUrl
     created_at : datetime
+
+class AllLinksResponse(BaseModel):
+    short_code: str
+    original_url: str
+    click_count: int
+    created_at: datetime
