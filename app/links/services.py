@@ -15,7 +15,7 @@ async def create_link(session: AsyncSession, original_url: str):
     original_url = str(original_url)
     for _ in range(5):
         code = generate_short_code()
-        stmt = select(Link).where(Link.short_code == code)
+        stmt = select(Link).where(Link.short_code == code).where(Link.deleted_at.is_(None))
         result = await session.execute(stmt)
         if not result.scalars().first():
             new_link = Link(original_url=original_url, short_code=code)
@@ -45,7 +45,7 @@ async def get_link_by_code(session: AsyncSession, short_code: str):
         await publish_click_events(short_code)
         return cached_url
 
-    stmt = select(Link).where(Link.short_code == short_code)
+    stmt = select(Link).where(Link.short_code == short_code).where(Link.deleted_at.is_(None))
     result = await session.execute(stmt)
     link = result.scalars().first()
 
@@ -57,14 +57,14 @@ async def get_link_by_code(session: AsyncSession, short_code: str):
     return None
 
 async def get_links(session: AsyncSession):
-    stmt = select(Link)
+    stmt = select(Link).where(Link.deleted_at.is_(None))
     result = await session.execute(stmt)
     all_links = result.scalars().all()
     print(all_links)
     return all_links
 
 async def get_statistics(session: AsyncSession, short_code: str):
-    stmt = select(Link.click_count).where(Link.short_code == short_code)
+    stmt = select(Link.click_count).where(Link.short_code == short_code).where(Link.deleted_at.is_(None))
     result = await session.execute(stmt)
 
     statistic = result.scalars().first()
