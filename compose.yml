@@ -40,6 +40,15 @@ services:
     image: redis:7-alpine
     ports:
         - "6379:6379"
+      
+  rabbitmq:
+    image: rabbitmq:4-management-alpine
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASSWORD: guest
 
   nginx:
       image: nginx:alpine

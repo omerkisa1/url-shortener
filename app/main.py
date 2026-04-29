@@ -6,14 +6,17 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.links.router import router as LinkRouter
 from app.redis import init_redis, close_redis
+from app.rabbitmq import init_rabbitmq, close_rabbitmq
 
 from fastapi.middleware.cors import CORSMiddleware
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await init_redis()
+    await init_rabbitmq()
     yield 
     await close_redis()
+    close_rabbitmq()
 
 
 app = FastAPI(lifespan=lifespan)

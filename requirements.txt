@@ -6,3 +6,5 @@ pydantic-settings
 alembic
 psycopg2-binary
 redis
+pika
+aio_pika
