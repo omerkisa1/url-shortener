@@ -12,5 +12,5 @@ class Link(Base):
     short_code: Mapped[str]  = mapped_column(String(20), unique=True, index=True)
     click_count: Mapped[int]  = mapped_column(Integer, default=0)
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())
-    deleted_at: Mapped[datetime] = mapped_column(server_default=func.now())
+    deleted_at: Mapped[datetime | None] = mapped_column(nullable=True)
 

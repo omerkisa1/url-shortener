@@ -35,7 +35,6 @@ async def delete_link(session: AsyncSession, short_code: str):
         return None
 
     link.deleted_at = datetime.utcnow()
-    await session.delete(link)
     await session.commit()
     return link
 
