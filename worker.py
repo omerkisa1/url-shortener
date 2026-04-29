@@ -15,22 +15,26 @@ async def process_click(message: aio_pika.IncomingMessage):
             )
             await session.execute(stmt)
             await session.commit()
-            print(f"[WORKER] click_count artırıldı: {short_code}")
+            print(f"[WORKER] click_count increased: {short_code}")
 
 async def main():
-    for attempt in range(10):
+    for attempt in range(15):
         try:
+            print(f"[WORKER] RabbitMQ deneme {attempt + 1}/15...")
             connection = await aio_pika.connect_robust(settings.RABBITMQ_URL)
+            print("[WORKER] RabbitMQ connecttion successful")
             break
-        except Exception:
-            await asyncio.sleep(3)
+        except Exception as e:
+            print(f"[WORKER] Başarısız: {e}")
+            await asyncio.sleep(5)
     else:
-        raise Exception("RabbitMQ'ya bağlanılamadı")
+        raise Exception("RabbitMQ connection error")
 
     channel = await connection.channel()
     await channel.set_qos(prefetch_count=10)
     queue = await channel.declare_queue("click_events", durable=True)
 
+    print("[WORKER] Listening queue")
     await queue.consume(process_click)
     await asyncio.Future()
 

@@ -8,15 +8,24 @@ rabbitmq_channel = None
 
 
 async def init_rabbitmq():
+    global rabbitmq_connection, rabbitmq_channel
     for attempt in range(10):
         try:
             rabbitmq_connection = await aio_pika.connect_robust(settings.RABBITMQ_URL)
             rabbitmq_channel = await rabbitmq_connection.channel()
             await rabbitmq_channel.declare_queue("click_events", durable=True)
+            print("[RABBITMQ] Bağlantı başarılı")
             return
         except Exception:
+            print(f"[RABBITMQ] Deneme {attempt + 1}/10...")
             await asyncio.sleep(3)
     raise Exception("Couldn't connect to RabbitMQ")
+
+async def publish_click_events(short_code: str):
+    await rabbitmq_channel.default_exchange.publish(
+        aio_pika.Message(body=short_code.encode()),
+        routing_key="click_events",
+    )
 
 async def close_rabbitmq():
     global rabbitmq_connection
@@ -24,7 +33,7 @@ async def close_rabbitmq():
         await rabbitmq_connection.close()
 
 async def publish_click_events(short_code: str):
-    await rabbitmq_channel.defaul_exchange.publish(
+    await rabbitmq_channel.default_exchange.publish(
         
         aio_pika.Message(short_code.encode()),
         routing_key="click_events"

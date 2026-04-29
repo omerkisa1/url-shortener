@@ -16,7 +16,7 @@ async def lifespan(app: FastAPI):
     await init_rabbitmq()
     yield 
     await close_redis()
-    close_rabbitmq()
+    await close_rabbitmq()
 
 
 app = FastAPI(lifespan=lifespan)

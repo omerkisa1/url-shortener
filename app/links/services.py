@@ -4,6 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from app.links.models import Link
 from app import redis
+from app.rabbitmq import publish_click_events
 
 def generate_short_code() -> str:
     chars = string.ascii_letters + string.digits
@@ -27,18 +28,18 @@ async def create_link(session: AsyncSession, original_url: str):
 async def get_link_by_code(session: AsyncSession, short_code: str):
     cached_url = await redis.redis_client.get(short_code)
     if cached_url:
+        await publish_click_events(short_code)
         return cached_url
-    
+
     stmt = select(Link).where(Link.short_code == short_code)
     result = await session.execute(stmt)
     link = result.scalars().first()
-    
+
     if link:
         await redis.redis_client.set(short_code, link.original_url, ex=3600)
-        link.click_count += 1
-        await session.commit()
+        await publish_click_events(short_code)
         return link.original_url
-        
+
     return None
 
 async def get_links(session: AsyncSession):
