@@ -1,7 +1,8 @@
 import asyncio
 import aio_pika
 from app.config import settings
-
+import datetime
+import json
 
 rabbitmq_connection = None
 rabbitmq_channel = None
@@ -32,10 +33,17 @@ async def close_rabbitmq():
     if rabbitmq_connection:
         await rabbitmq_connection.close()
 
-async def publish_click_events(short_code: str):
-    await rabbitmq_channel.default_exchange.publish(
-        
-        aio_pika.Message(short_code.encode()),
-        routing_key="click_events"
+async def publish_click_events(short_code: str, user_agent: str):
+    payload = {
+        "short_code": short_code,
+        "timestamp": datetime.utcnow().isoformat(),
+        "user_agent": user_agent
+    }
 
+    await rabbitmq_channel.default_exchange.publish(
+        aio_pika.Message(
+            body=json.dumps(payload).encode(),
+            content_type="application/json"
+        ),
+        routing_key="click_events"
     )

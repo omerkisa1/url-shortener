@@ -6,6 +6,9 @@ from typing import List
 from app.database import get_db
 from app.links.services import create_link, get_link_by_code, get_links, get_statistics, delete_link
 from app.links.schemas import ShortenRequest, ShortenResponse, AllLinksResponse, StatisticsResponse, DeleteLinkResponse
+from app.rabbitmq import publish_click_events
+
+import requests
 
 router = APIRouter()
 
@@ -25,13 +28,22 @@ async def stats(short_code: str,session: AsyncSession = Depends(get_db)):
 
     return {"click_count": stat}
 
+from fastapi import Request
+
 @router.get("/{short_code}")
-async def redirect_to_url(short_code: str, session: AsyncSession = Depends(get_db)):
+async def redirect_to_url(short_code: str, request: Request, session: AsyncSession = Depends(get_db)):
     original_url = await get_link_by_code(session, short_code)
-    
+
     if not original_url:
         raise HTTPException(status_code=404, detail="Link not found")
-    
+
+    user_agent = request.headers.get("user-agent")
+
+    await publish_click_events(
+        short_code=short_code,
+        user_agent=user_agent
+    )
+
     return RedirectResponse(url=original_url, status_code=307)
 
 @router.delete("/{short_code}", response_model=DeleteLinkResponse)
