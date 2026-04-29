@@ -1,5 +1,6 @@
 import string
 import random
+from datetime import datetime
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from app.links.models import Link
@@ -24,6 +25,19 @@ async def create_link(session: AsyncSession, original_url: str):
             return new_link
     raise Exception("Failed to generate unique short code")
         
+
+async def delete_link(session: AsyncSession, short_code: str):
+    short_code = str(short_code)
+    stmt = select(Link).where(Link.short_code == short_code)
+    result = await session.execute(stmt)
+    link = result.scalars().first()
+    if not link:
+        return None
+
+    link.deleted_at = datetime.utcnow()
+    await session.delete(link)
+    await session.commit()
+    return link
 
 async def get_link_by_code(session: AsyncSession, short_code: str):
     cached_url = await redis.redis_client.get(short_code)

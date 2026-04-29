@@ -18,3 +18,8 @@ class AllLinksResponse(BaseModel):
 
 class StatisticsResponse(BaseModel):
     click_count: int
+
+class DeleteLinkResponse(BaseModel):
+    short_code: str
+    original_url: str
+    deleted_at: datetime

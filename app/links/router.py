@@ -4,8 +4,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List
 
 from app.database import get_db
-from app.links.services import create_link, get_link_by_code, get_links, get_statistics
-from app.links.schemas import ShortenRequest, ShortenResponse, AllLinksResponse, StatisticsResponse
+from app.links.services import create_link, get_link_by_code, get_links, get_statistics, delete_link
+from app.links.schemas import ShortenRequest, ShortenResponse, AllLinksResponse, StatisticsResponse, DeleteLinkResponse
 
 router = APIRouter()
 
@@ -18,7 +18,6 @@ async def shorten_url(request: ShortenRequest, session: AsyncSession = Depends(g
 async def get_all_links(session: AsyncSession = Depends(get_db)):
     links = await get_links(session)
     return links
-
 
 @router.get("/{short_code}/stats", response_model=StatisticsResponse)
 async def stats(short_code: str,session: AsyncSession = Depends(get_db)):
@@ -35,3 +34,14 @@ async def redirect_to_url(short_code: str, session: AsyncSession = Depends(get_d
     
     return RedirectResponse(url=original_url, status_code=307)
 
+@router.delete("/{short_code}", response_model=DeleteLinkResponse)
+async def delete_link_by_code(short_code: str, session: AsyncSession = Depends(get_db)):
+    deleted_link = await delete_link(session, short_code)
+    if not deleted_link:
+        raise HTTPException(status_code=404, detail="Link not found")
+
+    return {
+        "short_code": deleted_link.short_code,
+        "original_url": deleted_link.original_url,
+        "deleted_at": deleted_link.deleted_at,
+    }
