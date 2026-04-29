@@ -3,6 +3,7 @@ import random
 from datetime import datetime
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 from app.links.models import Link
 from app import redis
 from app.rabbitmq import publish_click_events
@@ -13,29 +14,52 @@ def generate_short_code() -> str:
     
 async def create_link(session: AsyncSession, original_url: str):
     original_url = str(original_url)
+
+    cache_key = f"url:{original_url}"
+    existing_code = await redis.redis_client.get(cache_key)
+
+    if existing_code:
+        stmt = select(Link).where(Link.short_code == existing_code)
+        result = await session.execute(stmt)
+        return result.scalars().first()
+
     for _ in range(5):
         code = generate_short_code()
-        stmt = select(Link).where(Link.short_code == code).where(Link.deleted_at.is_(None))
-        result = await session.execute(stmt)
-        if not result.scalars().first():
+
+        try:
             new_link = Link(original_url=original_url, short_code=code)
             session.add(new_link)
             await session.commit()
             await session.refresh(new_link)
+
+            await redis.redis_client.set(cache_key, code, ex=3600)
+            await redis.redis_client.set(f"code:{code}", original_url, ex=3600)
+
             return new_link
+
+        except IntegrityError:
+            await session.rollback()
+            continue
+
     raise Exception("Failed to generate unique short code")
         
 
 async def delete_link(session: AsyncSession, short_code: str):
     short_code = str(short_code)
-    stmt = select(Link).where(Link.short_code == short_code)
+
+    stmt = select(Link).where(Link.short_code == short_code,Link.deleted_at.is_(None))
     result = await session.execute(stmt)
     link = result.scalars().first()
+
     if not link:
         return None
 
     link.deleted_at = datetime.utcnow()
     await session.commit()
+
+    await redis.redis_client.delete(f"code:{short_code}")
+    await redis.redis_client.delete(f"url:{link.original_url}")
+
     return link
 
 async def get_link_by_code(session: AsyncSession, short_code: str):
