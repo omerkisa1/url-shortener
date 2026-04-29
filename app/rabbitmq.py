@@ -8,10 +8,15 @@ rabbitmq_channel = None
 
 
 async def init_rabbitmq():
-    global rabbitmq_connection, rabbitmq_channel
-    rabbitmq_connection = await aio_pika.robust_connection(settings.RABBITMQ_URL)
-    rabbitmq_channel = await rabbitmq_connection.channel()
-    await rabbitmq_channel.declare_queue("click_events", durable=True)
+    for attempt in range(10):
+        try:
+            rabbitmq_connection = await aio_pika.connect_robust(settings.RABBITMQ_URL)
+            rabbitmq_channel = await rabbitmq_connection.channel()
+            await rabbitmq_channel.declare_queue("click_events", durable=True)
+            return
+        except Exception:
+            await asyncio.sleep(3)
+    raise Exception("Couldn't connect to RabbitMQ")
 
 async def close_rabbitmq():
     global rabbitmq_connection

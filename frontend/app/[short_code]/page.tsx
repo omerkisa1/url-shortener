@@ -17,7 +17,7 @@ export default function LinkDetail() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const res = await fetch(`http://localhost:8000/link/${short_code}/stats`);
+        const res = await fetch(`/api/link/${short_code}/stats`);
         if (!res.ok) throw new Error("Stats not found");
         
         const data = await res.json();
@@ -64,7 +64,7 @@ export default function LinkDetail() {
             </p>
 
             <Link 
-              href={`http://localhost:8000/link/${short_code}`} 
+              href={`/api/link/${short_code}`} 
               target="_blank"
               className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow-sm transition"
             >

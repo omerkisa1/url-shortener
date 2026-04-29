@@ -17,7 +17,7 @@ export default function Home() {
 
   const fetchLinks = async () => {
     try {
-      const res = await fetch("http://localhost:8000/link/all_links");
+      const res = await fetch("/api/link/all_links");
       const data = await res.json();
       if (Array.isArray(data)) {
         setLinks(data);
@@ -37,7 +37,7 @@ export default function Home() {
     setLoading(true);
     
     try {
-      const res = await fetch("http://localhost:8000/link/shorten", {
+      const res = await fetch("/api/link/shorten", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ original_url: url })
@@ -99,7 +99,7 @@ export default function Home() {
                 {links.map((link) => (
                   <tr key={link.short_code} className="border-b border-gray-50 hover:bg-gray-50 transition">
                     <td className="py-4 px-6 font-medium text-blue-600">
-                      <a href={`http://localhost:8000/link/${link.short_code}`} target="_blank" rel="noreferrer" className="hover:underline">
+                      <a href={`/api/link/${link.short_code}`} target="_blank" rel="noreferrer" className="hover:underline">
                         /{link.short_code}
                       </a>
                     </td>

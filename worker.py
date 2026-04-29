@@ -18,15 +18,21 @@ async def process_click(message: aio_pika.IncomingMessage):
             print(f"[WORKER] click_count artırıldı: {short_code}")
 
 async def main():
-    connection = await aio_pika.connect_robust(settings.RABBITMQ_URL)
+    for attempt in range(10):
+        try:
+            connection = await aio_pika.connect_robust(settings.RABBITMQ_URL)
+            break
+        except Exception:
+            await asyncio.sleep(3)
+    else:
+        raise Exception("RabbitMQ'ya bağlanılamadı")
+
     channel = await connection.channel()
     await channel.set_qos(prefetch_count=10)
     queue = await channel.declare_queue("click_events", durable=True)
-    
-    print("[WORKER] Queue dinleniyor...")
+
     await queue.consume(process_click)
-    
-    await asyncio.Future() 
+    await asyncio.Future()
 
 if __name__ == "__main__":
     asyncio.run(main())
