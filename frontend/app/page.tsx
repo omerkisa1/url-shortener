@@ -14,6 +14,7 @@ export default function Home() {
   const [url, setUrl] = useState("");
   const [links, setLinks] = useState<UrlData[]>([]);
   const [loading, setLoading] = useState(false);
+  const [deletingCode, setDeletingCode] = useState<string | null>(null);
 
   const fetchLinks = async () => {
     try {
@@ -50,6 +51,25 @@ export default function Home() {
       console.error("Error shortening URL", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDelete = async (shortCode: string) => {
+    const confirmed = window.confirm("Bu link silinsin mi?");
+    if (!confirmed) return;
+
+    setDeletingCode(shortCode);
+    try {
+      const res = await fetch(`/api/link/${shortCode}`, { method: "DELETE" });
+      if (res.ok) {
+        setLinks((prev) => prev.filter((link) => link.short_code !== shortCode));
+      } else {
+        console.error("Error deleting link", res.statusText);
+      }
+    } catch (error) {
+      console.error("Error deleting link", error);
+    } finally {
+      setDeletingCode(null);
     }
   };
 
@@ -112,12 +132,22 @@ export default function Home() {
                       </span>
                     </td>
                     <td className="py-4 px-6 text-right">
-                      <Link 
-                        href={`/${link.short_code}`}
-                        className="text-sm text-gray-500 hover:text-blue-600 underline font-medium"
-                      >
-                        Detaylar ▸
-                      </Link>
+                      <div className="flex items-center justify-end gap-4">
+                        <Link 
+                          href={`/${link.short_code}`}
+                          className="text-sm text-gray-500 hover:text-blue-600 underline font-medium"
+                        >
+                          Detaylar ▸
+                        </Link>
+                        <button
+                          type="button"
+                          onClick={() => handleDelete(link.short_code)}
+                          disabled={deletingCode === link.short_code}
+                          className="text-sm text-red-600 hover:text-red-700 font-medium disabled:opacity-50"
+                        >
+                          {deletingCode === link.short_code ? "Siliniyor..." : "Sil"}
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
