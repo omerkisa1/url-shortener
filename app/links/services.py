@@ -74,7 +74,6 @@ async def get_link_by_code(session: AsyncSession, short_code: str):
 
     if link:
         await redis.redis_client.set(short_code, link.original_url, ex=3600)
-        await publish_click_events(short_code)
         return link.original_url
 
     return None
