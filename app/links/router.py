@@ -26,6 +26,9 @@ async def get_all_links(session: AsyncSession = Depends(get_db)):
 async def stats(short_code: str,session: AsyncSession = Depends(get_db)):
     stat = await get_statistics(session, short_code)
 
+    if stat is None:
+        raise HTTPException(status_code=404, detail="No stats found")
+
     return {"click_count": stat}
 
 from fastapi import Request
