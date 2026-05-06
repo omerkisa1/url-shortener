@@ -63,7 +63,7 @@ async def delete_link(session: AsyncSession, short_code: str):
     return link
 
 async def get_link_by_code(session: AsyncSession, short_code: str):
-    cached_url = await redis.redis_client.get(short_code)
+    cached_url = await redis.redis_client.get(f"code:{short_code}")
     if cached_url:
         await publish_click_events(short_code)
         return cached_url
@@ -73,7 +73,7 @@ async def get_link_by_code(session: AsyncSession, short_code: str):
     link = result.scalars().first()
 
     if link:
-        await redis.redis_client.set(short_code, link.original_url, ex=3600)
+        await redis.redis_client.set(f"code:{short_code}", link.original_url, ex=3600)
         return link.original_url
 
     return None
