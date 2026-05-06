@@ -4,11 +4,14 @@ from sqlalchemy import update
 from app.config import settings
 from app.database import async_session
 from app.links.models import Link
+import json
 
 async def process_click(message: aio_pika.IncomingMessage):
     async with message.process():
-        short_code = message.body.decode()
-        
+        body = message.body.decode()
+        payload = json.loads(body)
+        short_code = payload["short_code"]
+
         async with async_session() as session:
             stmt = update(Link).where(Link.short_code == short_code).values(
                 click_count=Link.click_count + 1

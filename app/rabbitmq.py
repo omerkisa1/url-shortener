@@ -22,28 +22,24 @@ async def init_rabbitmq():
             await asyncio.sleep(3)
     raise Exception("Couldn't connect to RabbitMQ")
 
-async def publish_click_events(short_code: str):
-    await rabbitmq_channel.default_exchange.publish(
-        aio_pika.Message(body=short_code.encode()),
-        routing_key="click_events",
-    )
-
 async def close_rabbitmq():
     global rabbitmq_connection
     if rabbitmq_connection:
         await rabbitmq_connection.close()
 
-async def publish_click_events(short_code: str, user_agent: str):
+
+async def publish_click_events(short_code: str, user_agent: str | None = None):
     payload = {
-        "short_code": short_code,
-        "timestamp": datetime.utcnow().isoformat(),
-        "user_agent": user_agent
+            "short_code": short_code,
+            "timestamp": datetime.datetime.utcnow().isoformat(),
     }
+    if user_agent is not None:
+        payload["user_agent"] = user_agent
 
     await rabbitmq_channel.default_exchange.publish(
         aio_pika.Message(
             body=json.dumps(payload).encode(),
-            content_type="application/json"
+            content_type="application/json",
         ),
-        routing_key="click_events"
+        routing_key="click_events",
     )
